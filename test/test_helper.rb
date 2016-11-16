@@ -2,6 +2,7 @@ require 'simplecov'
 
 SimpleCov.start do
   add_filter "test/"
+  add_filter "vendor/"
   add_filter "lib/onelogin/ruby-saml/logging.rb"
 end
 
@@ -129,6 +130,10 @@ class Minitest::Test
 
   def unsigned_message_encrypted_unsigned_assertion
     @unsigned_message_encrypted_unsigned_assertion ||= File.read(File.join(File.dirname(__FILE__), 'responses', 'unsigned_message_encrypted_unsigned_assertion.xml.base64'))    
+  end
+
+  def response_document_encrypted_attrs
+    @response_document_encrypted_attrs ||= File.read(File.join(File.dirname(__FILE__), 'responses', 'response_encrypted_attrs.xml.base64'))
   end
 
   def signature_fingerprint_1

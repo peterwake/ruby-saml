@@ -136,9 +136,9 @@ module OneLogin
       #
       def get_sp_key
         return nil if private_key.nil? || private_key.empty?
-        
-        formated_private_key = OneLogin::RubySaml::Utils.format_private_key(private_key)
-        OpenSSL::PKey::RSA.new(formated_private_key)
+
+        formatted_private_key = OneLogin::RubySaml::Utils.format_private_key(private_key)
+        OpenSSL::PKey::RSA.new(formatted_private_key)
       end
 
       private
@@ -155,6 +155,7 @@ module OneLogin
           :logout_requests_signed   => false,
           :logout_responses_signed  => false,
           :want_assertions_signed   => false,
+          :want_name_id             => false,
           :metadata_signed          => false,
           :embed_sign               => false,
           :digest_method            => XMLSecurity::Document::SHA1,

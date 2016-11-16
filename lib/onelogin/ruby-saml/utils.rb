@@ -111,13 +111,13 @@ module OneLogin
         symmetric_key = retrieve_symmetric_key(encrypt_data, private_key)
         cipher_value = REXML::XPath.first(
           encrypt_data,
-          "//xenc:EncryptedData/xenc:CipherData/xenc:CipherValue",
+          "./xenc:CipherData/xenc:CipherValue",
           { 'xenc' => XENC }
         )
         node = Base64.decode64(cipher_value.text)
         encrypt_method = REXML::XPath.first(
           encrypt_data,
-          "//xenc:EncryptedData/xenc:EncryptionMethod",
+          "./xenc:EncryptionMethod",
           { 'xenc' => XENC }
         )
         algorithm = encrypt_method.attributes['Algorithm']
@@ -131,10 +131,12 @@ module OneLogin
       def self.retrieve_symmetric_key(encrypt_data, private_key)
         encrypted_key = REXML::XPath.first(
           encrypt_data,
-          "//xenc:EncryptedData/ds:KeyInfo/xenc:EncryptedKey or \
-           //xenc:EncryptedKey[@Id=substring-after(//xenc:EncryptedData/ds:KeyInfo/ds:RetrievalMethod/@URI, '#')]",
-          { "ds" => DSIG, "xenc" => XENC }
+          "./ds:KeyInfo/xenc:EncryptedKey or \
+           //xenc:EncryptedKey[@Id=$id]",
+          { "ds" => DSIG, "xenc" => XENC },
+          { "id" =>  self.retrieve_symetric_key_reference(encrypt_data) }
         )
+
         encrypted_symmetric_key_element = REXML::XPath.first(
           encrypted_key,
           "./xenc:CipherData/xenc:CipherValue",
@@ -148,6 +150,14 @@ module OneLogin
         )
         algorithm = encrypt_method.attributes['Algorithm']
         retrieve_plaintext(cipher_text, private_key, algorithm)
+      end
+
+      def self.retrieve_symetric_key_reference(encrypt_data)
+        REXML::XPath.first(
+          encrypt_data,
+          "substring-after(./ds:KeyInfo/ds:RetrievalMethod/@URI, '#')",
+          { "ds" => DSIG }
+        )
       end
 
       # Obtains the deciphered text
@@ -182,6 +192,33 @@ module OneLogin
 
       def self.uuid
         RUBY_VERSION < '1.9' ? "_#{@@uuid_generator.generate}" : "_#{SecureRandom.uuid}"
+      end
+
+      # Given two strings, attempt to match them as URIs using Rails' parse method.  If they can be parsed,
+      # then the fully-qualified domain name and the host should performa a case-insensitive match, per the
+      # RFC for URIs.  If Rails can not parse the string in to URL pieces, return a boolean match of the
+      # two strings.  This maintains the previous functionality.
+      # @return [Boolean]
+      def self.uri_match?(destination_url, settings_url)
+        dest_uri = URI.parse(destination_url)
+        acs_uri = URI.parse(settings_url)
+
+        if dest_uri.scheme.nil? || acs_uri.scheme.nil? || dest_uri.host.nil? || acs_uri.host.nil?
+          raise URI::InvalidURIError
+        else
+          dest_uri.scheme.downcase == acs_uri.scheme.downcase &&
+            dest_uri.host.downcase == acs_uri.host.downcase &&
+            dest_uri.path == acs_uri.path &&
+            dest_uri.query == acs_uri.query
+        end
+      rescue URI::InvalidURIError
+        original_uri_match?(destination_url, settings_url)
+      end
+
+      # If Rails' URI.parse can't match to valid URL, default back to the original matching service.
+      # @return [Boolean]
+      def self.original_uri_match?(destination_url, settings_url)
+        destination_url == settings_url
       end
     end
   end

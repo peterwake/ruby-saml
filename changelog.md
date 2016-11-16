@@ -1,5 +1,40 @@
 # RubySaml Changelog
 
+### 1.4.1 (October 19, 2016)
+* [#357](https://github.com/onelogin/ruby-saml/pull/357) Add EncryptedAttribute support. Improve decrypt method
+* Allow multiple authn_context_decl_ref in settings
+* Allow options[:settings] to be an hash for Settings overrides in IdpMetadataParser#parse
+* Recover issuers method
+
+### 1.4.0 (October 13, 2016)
+* Several security improvements:
+  * Conditions element required and unique.
+  * AuthnStatement element required and unique.
+  * SPNameQualifier must math the SP EntityID
+  * Reject saml:Attribute element with same “Name” attribute
+  * Reject empty nameID
+  * Require Issuer element. (Must match IdP EntityID).
+  * Destination value can't be blank (if present must match ACS URL).
+  * Check that the EncryptedAssertion element only contains 1 Assertion element.
+
+* [#335](https://github.com/onelogin/ruby-saml/pull/335) Explicitly parse as XML and fix setting of Nokogiri options.
+* [#345](https://github.com/onelogin/ruby-saml/pull/345)Support multiple settings.auth_context
+* More tests to prevent XML Signature Wrapping
+* [#342](https://github.com/onelogin/ruby-saml/pull/342) Correct the usage of Mutex
+* [352](https://github.com/onelogin/ruby-saml/pull/352) Support multiple AttributeStatement tags
+
+
+### 1.3.1 (July 10, 2016)
+* Fix response_test.rb of gem 1.3.0
+* Add reference to Security Guidelines
+* Update License
+* [#334](https://github.com/onelogin/ruby-saml/pull/334) Keep API backward-compatibility on IdpMetadataParser fingerprint method. 
+
+### 1.3.0 (June 24, 2016)
+* [Security Fix](https://github.com/onelogin/ruby-saml/commit/a571f52171e6bfd87db59822d1d9e8c38fb3b995) Add extra validations to prevent Signature wrapping attacks
+* Fix XMLSecurity SHA256 and SHA512 uris
+* [#326](https://github.com/onelogin/ruby-saml/pull/326) Fix Destination validation
+
 ### 1.2.0 (April 29, 2016)
 * [#269](https://github.com/onelogin/ruby-saml/pull/269) Refactor error handling; allow collect error messages when soft=true (normal validation stop after find first error)
 * [#289](https://github.com/onelogin/ruby-saml/pull/289) Remove uuid gem in favor of SecureRandom
