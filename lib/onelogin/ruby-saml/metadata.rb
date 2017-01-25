@@ -42,11 +42,13 @@ module OneLogin
           xc = xd.add_element "ds:X509Certificate"
           xc.text = cert_text
 
-          kd2 = sp_sso.add_element "md:KeyDescriptor", { "use" => "encryption" }
-          ki2 = kd2.add_element "ds:KeyInfo", {"xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#"}
-          xd2 = ki2.add_element "ds:X509Data"
-          xc2 = xd2.add_element "ds:X509Certificate"
-          xc2.text = cert_text
+          if settings.security[:want_assertions_encrypted]
+            kd2 = sp_sso.add_element "md:KeyDescriptor", { "use" => "encryption" }
+            ki2 = kd2.add_element "ds:KeyInfo", {"xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#"}
+            xd2 = ki2.add_element "ds:X509Data"
+            xc2 = xd2.add_element "ds:X509Certificate"
+            xc2.text = cert_text
+          end
         end
 
         root.attributes["ID"] = OneLogin::RubySaml::Utils.uuid
@@ -86,7 +88,8 @@ module OneLogin
             sp_req_attr = sp_acs.add_element "md:RequestedAttribute", {
               "NameFormat" => attribute[:name_format],
               "Name" => attribute[:name], 
-              "FriendlyName" => attribute[:friendly_name]
+              "FriendlyName" => attribute[:friendly_name],
+              "isRequired" => attribute[:is_required] || false
             }
             unless attribute[:attribute_value].nil?
               Array(attribute[:attribute_value]).each do |value|

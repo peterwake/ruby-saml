@@ -563,7 +563,7 @@ module OneLogin
       #
       def validate_in_response_to
         return true unless options.has_key? :matches_request_id
-        return true if options[:matches_request_id].nil? || options[:matches_request_id].empty?
+        return true if options[:matches_request_id].nil?
         return true unless options[:matches_request_id] != in_response_to
 
         error_msg = "The InResponseTo of the Response: #{in_response_to}, does not match the ID of the AuthNRequest sent by the SP: #{options[:matches_request_id]}"
@@ -586,12 +586,14 @@ module OneLogin
         true
       end
 
-      # Validates the Destination, (If the SAML Response is received where expected)
+      # Validates the Destination, (If the SAML Response is received where expected).
+      # If the response was initialized with the :skip_destination option, this validation is skipped,
       # If fails, the error is added to the errors array
       # @return [Boolean] True if there is a Destination element that matches the Consumer Service URL, otherwise False
       #
       def validate_destination
         return true if destination.nil?
+        return true if options[:skip_destination]
 
         if destination.empty?
           error_msg = "The response has an empty Destination value"

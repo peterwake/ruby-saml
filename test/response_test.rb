@@ -24,6 +24,7 @@ class RubySamlTest < Minitest::Test
     let(:response_no_conditions) { OneLogin::RubySaml::Response.new(read_invalid_response("no_conditions.xml.base64")) }
     let(:response_no_authnstatement) { OneLogin::RubySaml::Response.new(read_invalid_response("no_authnstatement.xml.base64")) }
     let(:response_empty_destination) { OneLogin::RubySaml::Response.new(read_invalid_response("empty_destination.xml.base64")) }
+    let(:response_empty_destination_with_skip) { OneLogin::RubySaml::Response.new(read_invalid_response("empty_destination.xml.base64"), {:skip_destination => true}) }
     let(:response_no_status) { OneLogin::RubySaml::Response.new(read_invalid_response("no_status.xml.base64")) }
     let(:response_no_statuscode) { OneLogin::RubySaml::Response.new(read_invalid_response("no_status_code.xml.base64")) }
     let(:response_statuscode_responder) { OneLogin::RubySaml::Response.new(read_invalid_response("status_code_responder.xml.base64")) }
@@ -434,6 +435,12 @@ class RubySamlTest < Minitest::Test
         response_empty_destination.settings = settings
         assert !response_empty_destination.send(:validate_destination)
         assert_includes response_empty_destination.errors, "The response has an empty Destination value"
+      end
+
+      it "return true when the destination of the SAML Response is empty but skip_destination option is used" do
+        response_empty_destination_with_skip.settings = settings
+        assert response_empty_destination_with_skip.send(:validate_destination)
+        assert_empty response_empty_destination.errors
       end
 
       it "returns true on a case insensitive match on the domain" do
@@ -1063,14 +1070,14 @@ class RubySamlTest < Minitest::Test
         end
 
         it "check what happens when trying retrieve attribute that does not exists" do
-          assert_equal nil, response_multiple_attr_values.attributes[:attribute_not_exists]
-          assert_equal nil, response_multiple_attr_values.attributes.single(:attribute_not_exists)
-          assert_equal nil, response_multiple_attr_values.attributes.multi(:attribute_not_exists)
+          assert_nil response_multiple_attr_values.attributes[:attribute_not_exists]
+          assert_nil response_multiple_attr_values.attributes.single(:attribute_not_exists)
+          assert_nil response_multiple_attr_values.attributes.multi(:attribute_not_exists)
 
           OneLogin::RubySaml::Attributes.single_value_compatibility = false
-          assert_equal nil, response_multiple_attr_values.attributes[:attribute_not_exists]
-          assert_equal nil, response_multiple_attr_values.attributes.single(:attribute_not_exists)
-          assert_equal nil, response_multiple_attr_values.attributes.multi(:attribute_not_exists)
+          assert_nil response_multiple_attr_values.attributes[:attribute_not_exists]
+          assert_nil response_multiple_attr_values.attributes.single(:attribute_not_exists)
+          assert_nil response_multiple_attr_values.attributes.multi(:attribute_not_exists)
           OneLogin::RubySaml::Attributes.single_value_compatibility = true
         end
 
